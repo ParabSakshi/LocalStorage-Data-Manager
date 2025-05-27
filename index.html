@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Student Data</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #f0f4f8;
+      padding: 40px;
+    }
+
+    form {
+      background-color: #ffffff;
+      width: 500px;
+      margin: 0 auto 40px;
+      border-radius: 15px;
+      border: 3px solid blue;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 30px 40px;
+    }
+
+    form label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    form input[type="text"],
+    form input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    form input:focus {
+      border-color: #007bff;
+      outline: none;
+    }
+
+    form button {
+      padding: 10px 20px;
+      background-color: blue;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 0px 150px;
+    }
+
+    form button:hover {
+      background-color: #0056b3;
+    }
+
+    table {
+      width: 90%;
+      margin: 0 auto;
+      border-collapse: collapse;
+      background-color: #fff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    thead {
+      background-color: #007bff;
+      color: black;
+      font-size: 20px;
+    }
+
+    th,
+    td {
+      padding: 12px 15px;
+      text-align: center;
+      border: 1px solid #ccc;
+    }
+
+    td button {
+      padding: 6px 12px;
+      margin: 0 5px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    td button:first-child {
+      background-color: #218838;
+      color: white;
+    }
+
+    td button:first-child:hover {
+      background-color: #08aa2b;
+    }
+
+    td button:last-child {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    td button:last-child:hover {
+      background-color: #c82333;
+    }
+  </style>
+</head>
+<body>
+
+  <form onsubmit="change_object(event)">
+    <label for="id">Id</label>
+    <input type="number" name="id" id="id" required />
+
+    <label for="name">Name</label>
+    <input type="text" name="name" id="name" required />
+
+    <label for="age">Age</label>
+    <input type="number" name="age" id="age" required />
+
+    <label for="city">City</label>
+    <input type="text" name="city" id="city" required />
+
+    <button type="submit">Submit</button>
+    <input type="hidden" id="editIndex" value="" />
+  </form>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Age</th>
+        <th>City</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="table_body"></tbody>
+  </table>
+
+  <script>
+    function getStudentData() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem("Student"));
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        console.warn("Invalid localStorage data:", e);
+        return [];
+      }
+    }
+
+    function change_object(event) {
+      event.preventDefault();
+
+      const id = document.getElementById("id").value;
+      const name = document.getElementById("name").value;
+      const age = document.getElementById("age").value;
+      const city = document.getElementById("city").value;
+      const editIndex = document.getElementById("editIndex").value;
+
+      const formData = { id, name, age, city };
+      const data = getStudentData();
+
+      if (editIndex === "") {
+        data.push(formData);
+      } else {
+        data[editIndex] = formData;
+        document.getElementById("editIndex").value = "";
+      }
+
+      localStorage.setItem("Student", JSON.stringify(data));
+      clearForm();
+      displayTable();
+    }
+
+    function displayTable() {
+      const table_body = document.getElementById("table_body");
+      const data = getStudentData();
+
+      table_body.innerHTML = data.map((item, index) => `
+        <tr>
+          <td>${item.id}</td>
+          <td>${item.name}</td>
+          <td>${item.age}</td>
+          <td>${item.city}</td>
+          <td>
+            <button onclick="editEntry(${index})">Update</button>
+            <button onclick="deleteEntry(${index})">Delete</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function editEntry(index) {
+      const data = getStudentData();
+      const item = data[index];
+
+      document.getElementById("id").value = item.id;
+      document.getElementById("name").value = item.name;
+      document.getElementById("age").value = item.age;
+      document.getElementById("city").value = item.city;
+      document.getElementById("editIndex").value = index;
+    }
+
+    function deleteEntry(index) {
+      const data = getStudentData();
+      data.splice(index, 1);
+      localStorage.setItem("Student", JSON.stringify(data));
+      displayTable();
+    }
+
+    function clearForm() {
+      document.getElementById("id").value = "";
+      document.getElementById("name").value = "";
+      document.getElementById("age").value = "";
+      document.getElementById("city").value = "";
+      document.getElementById("editIndex").value = "";
+    }
+
+    displayTable();
+  </script>
+
+</body>
+</html>
